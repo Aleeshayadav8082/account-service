@@ -1,10 +1,12 @@
 package com.maveric.accountservice.controller;
 
 import com.maveric.accountservice.dto.AccountDto;
+import com.maveric.accountservice.dto.UserDto;
 import com.maveric.accountservice.entity.Account;
 import com.maveric.accountservice.exception.AccountIDNotfoundException;
 import com.maveric.accountservice.exception.AccountNotFoundException;
 import com.maveric.accountservice.exception.CustomerIDNotFoundExistsException;
+import com.maveric.accountservice.feignclient.FeignConsumer;
 import com.maveric.accountservice.repository.AccountRepository;
 import com.maveric.accountservice.services.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 
@@ -39,12 +42,15 @@ public class AccountController {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    FeignConsumer feignConsumer;
+
 
     @GetMapping("customers/{customerId}/accounts/{accountId}")
     public AccountDto getAccount(@PathVariable("customerId") String customerId, @Valid
     @PathVariable("accountId") String accountId) throws AccountNotFoundException ,CustomerIDNotFoundExistsException{
-         AccountDto accounts=accountService.getAccountByAccId(customerId,accountId);
-         return accounts;
+        AccountDto accounts=accountService.getAccountByAccId(customerId,accountId);
+        return accounts;
     }
     @PutMapping("customers/{customerId}/accounts/{accountId}")
     public ResponseEntity<Account> updateAccount(@PathVariable(name = "customerId") String customerId, @Valid @PathVariable(name = "accountId") String accountId, @RequestBody Account account) {
@@ -64,14 +70,15 @@ public class AccountController {
     @GetMapping("customers/{customerId}/accounts")
     public ResponseEntity<List<AccountDto>> getAccountByCustomerId(@PathVariable String customerId, @Valid @RequestParam(defaultValue = "0") Integer page,
                                                                    @RequestParam(defaultValue = "10") @Valid Integer pageSize)throws CustomerIdMissmatchException {
-List<AccountDto> accountDtoResponse = accountService.getAccountByUserId(page, pageSize, customerId);
+
+        List<AccountDto> accountDtoResponse = accountService.getAccountByUserId(page, pageSize, customerId);
         return new ResponseEntity<>(accountDtoResponse, HttpStatus.OK);
 
     }
 
     @DeleteMapping("customers/{customerId}/accounts/{accountId}")
     public ResponseEntity<String> deleteAccount(@PathVariable String customerId,@Valid
-                                                @PathVariable String accountId) throws AccountNotFoundException,CustomerIdMissmatchException{
+    @PathVariable String accountId) throws AccountNotFoundException,CustomerIdMissmatchException{
 
         String result = accountService.deleteAccount(accountId,customerId);
 
@@ -87,14 +94,18 @@ List<AccountDto> accountDtoResponse = accountService.getAccountByUserId(page, pa
 
     @PostMapping("customers/{customerId}/accounts")
     public ResponseEntity<AccountDto> createAccount (@PathVariable String customerId, @Valid @RequestBody AccountDto
-            accountDto){
+            accountDto, HttpServletRequest request){
 
-        AccountDto accountDtoResponse = accountService.createAccount(customerId, accountDto);
-        return new ResponseEntity<>(accountDtoResponse, HttpStatus.CREATED);
+        UserDto userDto = feignConsumer.getUserById(customerId).getBody();
+        if(userDto.getId().equals(accountDto.getCustomerId())) {
+            AccountDto accountDtoResponse = accountService.createAccount(customerId, accountDto);
+            return new ResponseEntity<>(accountDtoResponse, HttpStatus.CREATED);
+        } else {
+            throw new CustomerIDNotFoundExistsException("Customer does not exist");
+        }
 
 
     }
 
 }
-
 

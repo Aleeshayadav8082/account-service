@@ -9,4 +9,3 @@ public interface AccountRepository extends MongoRepository<Account,String> {
         Page<Account> findByCustomerId(Pageable page, String userId);
 
 }
-

@@ -21,4 +21,3 @@ public interface AccountMapper {
     byte[] writeValueAsString(AccountDto accountDto);
 }
 
-

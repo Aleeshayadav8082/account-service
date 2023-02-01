@@ -31,8 +31,8 @@ public class Account {
     @NotNull(message = "Type is mandatory - 'SAVINGS' or 'CURRENT'")
     private Type type;
 
-
-    private String Balance;
+//
+//    private String Balance;
 
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -44,4 +44,3 @@ public class Account {
     private Date updatedAt =new Date();
 
 }
-
