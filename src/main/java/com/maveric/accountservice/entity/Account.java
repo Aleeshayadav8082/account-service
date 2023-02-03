@@ -31,9 +31,6 @@ public class Account {
     @NotNull(message = "Type is mandatory - 'SAVINGS' or 'CURRENT'")
     private Type type;
 
-//
-//    private String Balance;
-
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(updatable = false)

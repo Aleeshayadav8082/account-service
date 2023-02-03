@@ -4,6 +4,7 @@ package com.maveric.accountservice.exception;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.maveric.accountservice.dto.ErrorDto;
 import com.maveric.accountservice.dto.ErrorReponseDto;
+import feign.FeignException;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import javax.servlet.http.HttpServletResponse;
 
 import static com.maveric.accountservice.enums.Constants.*;
 
@@ -102,5 +105,28 @@ public class ExceptionControlAdvisor {
         } else
             responseDto.setMessage(ex.getMessage());
         return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(FeignException.NotFound.class)
+    public ResponseEntity<ErrorDto> handleFeignExceptionNotFound(FeignException e, HttpServletResponse response) {
+        String message = e.contentUTF8();
+        String decode = (String) e.contentUTF8().subSequence(message.lastIndexOf(":\""), message.length()-2);
+        ErrorDto error = getError(decode.replace(":\"", ""), String.valueOf(HttpStatus.NOT_FOUND.value()));
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(FeignException.BadRequest.class)
+    public ResponseEntity<ErrorDto> handleFeignExceptionBadRequest(FeignException e, HttpServletResponse response) {
+        String message = e.contentUTF8();
+        String decode = (String) e.contentUTF8().subSequence(message.lastIndexOf(":\""), message.length()-2);
+        ErrorDto error = getError(decode.replace(":\"", ""), String.valueOf(HttpStatus.BAD_REQUEST.value()));
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    private ErrorDto getError(String message , String code){
+        ErrorDto error = new ErrorDto();
+        error.setCode(code);
+        error.setMessage(message);
+        return error;
     }
 }
