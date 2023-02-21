@@ -2,6 +2,7 @@ package com.maveric.accountservice.controller;
 
 import com.maveric.accountservice.constant.MessageConstant;
 import com.maveric.accountservice.dto.AccountDto;
+import com.maveric.accountservice.dto.BalanceDto;
 import com.maveric.accountservice.dto.UserDto;
 import com.maveric.accountservice.entity.Account;
 import com.maveric.accountservice.exception.AccountNotFoundException;
@@ -30,7 +31,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.util.List;
-
+import java.util.Optional;
 
 
 @RestController
@@ -38,10 +39,9 @@ import java.util.List;
 @RequestMapping("/api/v1")
 public class AccountController {
     @Autowired
-
     AccountService accountService;
     @Autowired
-    private AccountRepository accountRepository;
+    AccountRepository accountRepository;
 
     @Autowired
     FeignUserConsumer feignUserConsumer;
@@ -58,7 +58,10 @@ public class AccountController {
                                  @Valid @PathVariable("accountId") String accountId,
                                  @RequestHeader(value = "userid") String headerUserId) throws AccountNotFoundException ,CustomerIDNotFoundExistsException{
         if(headerUserId.equals(customerId)) {
-            return accountService.getAccountByAccId(customerId,accountId);
+            AccountDto accountDto = accountService.getAccountByAccId(customerId, accountId);;
+            ResponseEntity<BalanceDto> balanceDto = feignBalanceService.getAllBalanceByAccountId(accountId, customerId);
+            accountDto.setBalanceDto(balanceDto.getBody());
+            return new ResponseEntity<>(accountDto, HttpStatus.OK).getBody();
         } else {
             throw new CustomerIdMissmatchException(MessageConstant.NOT_AUTHORIZED_USER);
         }
@@ -142,20 +145,29 @@ public class AccountController {
 
         if(headerUserId.equals(customerId)) {
             List<Account> accountList = accountRepository.findAccountsByCustomerId(customerId);
-            if(accountList.isEmpty()) {
-                return new ResponseEntity<>(MessageConstant.ACCOUNT_NOT_FOUND, HttpStatus.NOT_FOUND);
-            }
-            else {
-                accountList.forEach(account -> {
-                    feignBalanceService.deleteBalanceByAccountId(account.get_id(), account.getCustomerId());
-                    feignTransactionService.deleteTransactionByAccountId(account.get_id(), account.getCustomerId());
-                    accountService.deleteAccount(account.get_id(), account.getCustomerId());
-                });
-                return new ResponseEntity<>(MessageConstant.DELETION_SUCCESS, HttpStatus.OK);
-            }
+            accountList.forEach(account -> {
+                feignBalanceService.deleteBalanceByAccountId(account.get_id(), account.getCustomerId());
+                feignTransactionService.deleteTransactionByAccountId(account.get_id(), account.getCustomerId());
+                accountService.deleteAccount(account.get_id(), account.getCustomerId());
+            });
+            return new ResponseEntity<>(MessageConstant.DELETION_SUCCESS, HttpStatus.OK);
         } else {
             throw new CustomerIdMissmatchException(MessageConstant.NOT_AUTHORIZED_USER);
         }
     }
-}
 
+    @GetMapping("customers/customerId/accounts/{accountId}")
+    public AccountDto getAccountByUserId(@PathVariable("accountId") String accountId,
+                                         @RequestHeader(value = "userid") String headerUserId) throws AccountNotFoundException ,CustomerIDNotFoundExistsException {
+        Optional<Account> account = accountRepository.findById(accountId);
+        if (account.isPresent()) {
+            if (account.get().getCustomerId().equals(headerUserId)) {
+                return accountService.getAccountByAccId(headerUserId, accountId);
+            } else {
+                throw new CustomerIDNotFoundExistsException(MessageConstant.NOT_AUTHORIZED_USER);
+            }
+        } else {
+            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+    }
+}

@@ -1,5 +1,6 @@
 package com.maveric.accountservice.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.maveric.accountservice.enums.Type;
 import lombok.*;
 
@@ -28,4 +29,6 @@ public class AccountDto{
     @Column(updatable = true)
     private Date updatedAt =new Date();
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private BalanceDto balanceDto;
 }

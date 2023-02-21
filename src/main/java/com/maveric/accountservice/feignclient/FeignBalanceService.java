@@ -1,15 +1,21 @@
 package com.maveric.accountservice.feignclient;
 
+import com.maveric.accountservice.dto.BalanceDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.*;
 
-@FeignClient(value = "balance", url = "http://localhost:3015/api/v1")
+import javax.validation.Valid;
+import java.util.List;
+
+@FeignClient(value = "balance-service")
 public interface FeignBalanceService {
 
-    @DeleteMapping("/accounts/{accountId}/balances")
+    @DeleteMapping("api/v1/accounts/{accountId}/balances")
     public ResponseEntity<String> deleteBalanceByAccountId(@PathVariable("accountId") String accountId,
                                                            @RequestHeader(value = "userid") String headerUserId);
+
+    @GetMapping("api/v1/accounts/{accountId}/balances")
+    public ResponseEntity<BalanceDto> getAllBalanceByAccountId(@PathVariable("accountId") @Valid String accountId,
+                                                               @RequestHeader(value = "userid") String headerUserId);
 }

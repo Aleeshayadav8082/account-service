@@ -3,6 +3,7 @@ package com.maveric.accountservice.dto;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -14,8 +15,8 @@ public class BalanceDto {
     private Number amount;
     private String currency;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Date createdAt;
+    private Date updatedAt;
 
 
 }

@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 
-@FeignClient(value = "user", url = "http://localhost:3005/api/v1")
+@FeignClient(value = "user-service")
 public interface FeignUserConsumer {
 
-    @GetMapping("/users/{userId}")
+    @GetMapping("api/v1/users/{userId}")
     public ResponseEntity<UserDto> getUserById(@PathVariable("userId") String id,
                                                @RequestHeader(value = "userid") String headerUserId);
 }
