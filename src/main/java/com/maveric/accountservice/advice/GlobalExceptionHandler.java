@@ -65,36 +65,35 @@ public class GlobalExceptionHandler {
         return errorDto;
     }
     @ExceptionHandler(CustomerIdMissmatchException.class)
-        public ResponseEntity<ErrorReponseDto> handllingException (CustomerIdMissmatchException ex){
-            ErrorReponseDto response = new ErrorReponseDto();
-            response.setCode("400");
-            response.setMessage(ex.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ErrorReponseDto> handllingException (CustomerIdMissmatchException ex){
+        ErrorReponseDto response = new ErrorReponseDto();
+        response.setCode("400");
+        response.setMessage(ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 
-        }
-        @ExceptionHandler //for enum
-        public ResponseEntity<ErrorReponseDto> invalidValueException (InvalidFormatException ex){
+    }
+    @ExceptionHandler //for enum
+    public ResponseEntity<ErrorReponseDto> invalidValueException (InvalidFormatException ex){
 
-            //HttpMessageNotReadableException.
-            ErrorReponseDto responseDto = new ErrorReponseDto();
-            responseDto.setCode("400");
-            if (ex.getMessage().contains("enum")) {
-                responseDto.setMessage("Cannot have values other than enum [SAVINGS,CURRENT]");
-            } else
-                responseDto.setMessage(ex.getMessage());
-            return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
-        }
-
-
-        @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-        @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
-        public ErrorDto handleHttpRequestMethodNotSupportedException (
-                HttpRequestMethodNotSupportedException ex){
-            ErrorDto errorDto = new ErrorDto();
-            errorDto.setCode(METHOD_NOT_ALLOWED_CODE);
-            errorDto.setMessage("customerId should be either should be mandotory");
-            return errorDto;
-        }
+        //HttpMessageNotReadableException.
+        ErrorReponseDto responseDto = new ErrorReponseDto();
+        responseDto.setCode("400");
+        if (ex.getMessage().contains("enum")) {
+            responseDto.setMessage("Cannot have values other than enum [SAVINGS,CURRENT]");
+        } else
+            responseDto.setMessage(ex.getMessage());
+        return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
     }
 
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public ErrorDto handleHttpRequestMethodNotSupportedException (
+            HttpRequestMethodNotSupportedException ex){
+        ErrorDto errorDto = new ErrorDto();
+        errorDto.setCode(METHOD_NOT_ALLOWED_CODE);
+        errorDto.setMessage("customerId should be either should be mandotory");
+        return errorDto;
+    }
+}
 

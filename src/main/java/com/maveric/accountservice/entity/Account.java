@@ -41,4 +41,3 @@ public class Account {
     private Date updatedAt =new Date();
 
 }
-

@@ -7,16 +7,16 @@ import javax.validation.constraints.NotBlank;
 import java.util.Currency;
 
 
-    @Getter
-    @Setter
+@Getter
+@Setter
 
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public class Balance {
-        @Id
-        private String _id;
-        private String amount;
-        private Currency currency;
-        @NotBlank(message = "AccountId is mandatory")
-        private String accountId;
-    }
+@AllArgsConstructor
+@NoArgsConstructor
+public class Balance {
+    @Id
+    private String _id;
+    private String amount;
+    private Currency currency;
+    @NotBlank(message = "AccountId is mandatory")
+    private String accountId;
+}

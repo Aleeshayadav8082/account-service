@@ -101,7 +101,7 @@ public class AccountController {
 
     @DeleteMapping("customers/{customerId}/accounts/{accountId}")
     public ResponseEntity<String> deleteAccount(@PathVariable String customerId,@Valid
-                                                @PathVariable String accountId,
+    @PathVariable String accountId,
                                                 @RequestHeader(value = "userid") String headerUserId) throws AccountNotFoundException,CustomerIdMissmatchException{
 
         if(headerUserId.equals(customerId)) {
@@ -141,10 +141,10 @@ public class AccountController {
 
     @DeleteMapping("customers/{customerId}/accounts")
     public ResponseEntity<String> deleteAllAccount(@PathVariable String customerId,
-                                                @RequestHeader(value = "userid") String headerUserId) throws AccountNotFoundException,CustomerIdMissmatchException{
+                                                   @RequestHeader(value = "userid") String headerUserId) throws AccountNotFoundException,CustomerIdMissmatchException{
 
         if(headerUserId.equals(customerId)) {
-        List<Account> accountList = accountRepository.findAccountsByCustomerId(customerId);
+            List<Account> accountList = accountRepository.findAccountsByCustomerId(customerId);
             accountList.forEach(account -> {
                 feignBalanceService.deleteBalanceByAccountId(account.get_id(), account.getCustomerId());
                 feignTransactionService.deleteTransactionByAccountId(account.get_id(), account.getCustomerId());
@@ -171,5 +171,3 @@ public class AccountController {
         }
     }
 }
-
-

@@ -77,7 +77,7 @@ public class AccountServiceImplTest {
         assertSame(accountDto.getType(),getAccountDto().getType());
     }
 
-@Test
+    @Test
     void createAccount() {
         when(mapper.map(any(AccountDto.class))).thenReturn(getAccount());
         when(mapper.map(any(Account.class))).thenReturn(getAccountDto());
@@ -108,5 +108,3 @@ public class AccountServiceImplTest {
     }
 
 }
-
-

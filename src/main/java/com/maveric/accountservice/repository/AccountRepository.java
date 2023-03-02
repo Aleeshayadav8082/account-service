@@ -13,4 +13,3 @@ public interface AccountRepository extends MongoRepository<Account,String> {
         List<Account> findAccountsByCustomerId(String userId);
 
 }
-
