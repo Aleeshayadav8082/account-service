@@ -106,9 +106,6 @@ public class AccountServiceImpl implements AccountService {
 
     }
 
-
-
-
     @Override
     public List<AccountDto> getAccountByUserId(Integer page, Integer pageSize, String customerId) throws
             CustomerIdMissmatchException {
@@ -120,11 +117,7 @@ public class AccountServiceImpl implements AccountService {
             return mapper.mapToDto(account);
         } else {
             throw new CustomerIdMissmatchException("Customer Id Missmatch");
-
         }
-
     }
-
-
 
 }

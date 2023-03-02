@@ -9,11 +9,7 @@ import com.maveric.accountservice.exception.CustomerIdMissmatchException;
 
 import com.maveric.accountservice.exception.CustomerIDNotFoundExistsException;
 
-import org.springframework.stereotype.Service;
-
 import java.util.List;
-
-@Service
 
 
 public interface AccountService {
@@ -30,11 +26,10 @@ public interface AccountService {
     Object updateAccount(Object any);
 
 
-    public String deleteAccount(String accountId,String CustomerID)throws CustomerIdMissmatchException;
+    public String deleteAccount(String accountId,String customerID)throws CustomerIdMissmatchException;
 
 
     public AccountDto createAccount(String customerId, AccountDto accountDto);
-
 
 }
 
