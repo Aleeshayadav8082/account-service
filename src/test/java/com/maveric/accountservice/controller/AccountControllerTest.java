@@ -1,173 +1,123 @@
 package com.maveric.accountservice.controller;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maveric.accountservice.dto.AccountDto;
-import com.maveric.accountservice.dto.BalanceDto;
+import com.maveric.accountservice.dto.UserDto;
 import com.maveric.accountservice.entity.Account;
+import com.maveric.accountservice.enums.Gender;
 import com.maveric.accountservice.enums.Type;
+import com.maveric.accountservice.feignclient.FeignBalanceService;
+import com.maveric.accountservice.feignclient.FeignTransactionService;
+import com.maveric.accountservice.feignclient.FeignUserConsumer;
 import com.maveric.accountservice.repository.AccountRepository;
 import com.maveric.accountservice.services.AccountService;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.Instant;
+import java.util.Date;
 
-import static com.maveric.accountservice.enums.Constants.ACCOUNT_DELETED_SUCCESS;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ContextConfiguration(classes=AccountController.class)
-//@RunWith(SpringRunner.class)
-@AutoConfigureMockMvc
+
 @WebMvcTest(AccountController.class)
+class AccountControllerTest {
 
+    @MockBean
+    AccountRepository accountRepository;
 
-public class AccountControllerTest {
+    @MockBean
+    AccountService accountService;
+
+    @MockBean
+    FeignTransactionService feignTransactionService;
+
+    @MockBean
+    FeignUserConsumer feignUserConsumer;
+
+    @MockBean
+    FeignBalanceService feignBalanceService;
+
     @Autowired
     MockMvc mvc;
-    @Autowired
-    ObjectMapper mapper;
-    @Mock
-    private List<Account> account;
-    @MockBean
-    private AccountService accountService;
-
-    @MockBean
-    private AccountRepository accountRepository;
-
-//    @MockBean
-//    private AccountService accountService;
 
     @Autowired
-    private MockMvc mock;
+    ObjectMapper objectMapper;
 
-
-    @Mock
-    ResponseEntity<BalanceDto> balanceDto;
+    private static final String API_V1_ACCOUNTS = "/api/v1/customers/1234/accounts";
 
     @Test
-    void shouldGetBalanceWhenRequestMadeToGetBalance() throws Exception{
-        when(accountService.getAccountByAccId("1","1")).thenReturn(getAccountDto());
-        mock.perform(get("/api/v1/customers/1/accounts/1").header("userId",1))
-                .andExpect(status().isOk())
-                .andDo(print());
-
+    void getAccountByCustomerId() throws Exception{
+        mvc.perform(get(API_V1_ACCOUNTS + "?page=0&pageSize=2").header("userid", "1234"))
+                .andExpect(status().isOk()).andDo(print());
     }
 
     @Test
-    public void getAccounts() throws Exception
-    {
-
-        mock.perform(get("/api/v1/customers/1234/accounts")
-                        .contentType(MediaType.APPLICATION_JSON).header("userId", "1234"))
-                .andExpect(status().isOk())
-                .andDo(print());
-    }
-    @Test
-    public void notgetAccounts() throws Exception {
-        mock.perform(get("/api/v1/customers/12346/accounts")
-                .contentType(MediaType.APPLICATION_JSON));
-
-
-    }
-
-    @Test
-    void deleteAccounts() throws Exception {
-        ResponseEntity<AccountDto> responseEntity = new ResponseEntity<>(getAccountDto(), HttpStatus.OK);
-        mock.perform(delete("/api/v1/customers/1/accounts/1234")
-                .contentType(MediaType.APPLICATION_JSON));
-
-    }
-    @Test
-
-    void updateAccount() throws Exception{
-        ResponseEntity<AccountDto> responseEntity = new ResponseEntity<>(HttpStatus.OK);
-        Object AccountDto = new Object();
-        when(accountService.updateAccount(any())).thenReturn(getAccountDto());
-        mock.perform(MockMvcRequestBuilders.put("/api/v1/customers/1234/accounts/1234")
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(getAccountDto())))
-                .andExpect(status().isOk())
-                .andDo(print());
-    }
-
-
-    @Test
-    void createAccounts() throws Exception{
-        ResponseEntity<AccountDto> responseEntity = new ResponseEntity<>(getAccountDto(), HttpStatus.OK);
-        when(accountService.createAccount(any(), any(AccountDto.class))).thenReturn(getAccountDto());
-        mock.perform(MockMvcRequestBuilders.post("/api/v1/customers/1/accounts")
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(getAccountDto())))
-                .andExpect(status().isCreated())
-                .andDo(print());
-    }
-
-
-    public AccountDto getAccountDto(){
-        AccountDto accountDto=new AccountDto();
-        accountDto.setCustomerId("1");
-        accountDto.setType(Type.SAVINGS);
-        accountDto.set_id("1");
-        return accountDto;
-    }
-
-
-    @Test
-    void NotupdateAccount() throws Exception{
-        ResponseEntity<AccountDto> responseEntity = new ResponseEntity<>(HttpStatus.OK);
-        Object AccountDto = new Object();
-        when(accountService.updateAccount(any())).thenReturn(getAccountDto());
-        mock.perform(MockMvcRequestBuilders.put("/api/v1/customers/2/accounts/3456")
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(getAccountDto())))
-
-                .andExpect(status().isOk())
-                .andDo(print());
-    }
-
-    @Test
-    void createAccounts_failure() throws Exception{
-        ResponseEntity<AccountDto> responseEntity = new ResponseEntity<>(getAccountDto1(), HttpStatus.OK);
-       when(accountService.createAccount(any(), any(AccountDto.class))).thenReturn(getAccountDto1());
-        mock.perform(MockMvcRequestBuilders.post("/api/v1/customers/1/accounts")
-                        .contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(getAccountDto1())))
+    void shouldThrowErrorWhenNotAuthorizedUserForDeleteAccount() throws Exception{
+        mvc.perform(delete(API_V1_ACCOUNTS + "/" + "1L").header("userid", "123"))
                 .andExpect(status().isBadRequest())
                 .andDo(print());
     }
-    public AccountDto getAccountDto1(){
-        AccountDto accountDto=new AccountDto();
-        accountDto.setCustomerId("1");
-        return accountDto;
+
+    @Test
+    void shouldThrowErrorWhenCreateAccountCustomerIDMismatch() throws Exception{
+        when(feignUserConsumer.getUserById(anyString(), anyString())).thenReturn(getUserDto());
+        mvc.perform(post(API_V1_ACCOUNTS).contentType(MediaType.APPLICATION_JSON)
+                        .header("userid", "1234")
+                        .content(objectMapper.writeValueAsString(getAccountDtoData())))
+                .andExpect(status().isBadRequest()).andDo(print());
     }
 
-    public ResponseEntity<List<Account>> getSampleAccount(){
+    @Test
+    void shouldThrowErrorWhenDeleteAllAccountNotAuthorizedUser() throws Exception{
+        mvc.perform(delete(API_V1_ACCOUNTS + "/" + "1L").header("userid", "123"))
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+    }
 
-        List<Account> accountList = new ArrayList<>();
+
+    public static ResponseEntity<Account> getAccountData(){
         Account account = new Account();
-        account.setCustomerId("1");
+        account.set_id("1L");
+        account.setType(Type.CURRENT);
+        account.setCustomerId("1234");
+        account.setCreatedAt(Date.from(Instant.parse("2023-02-01T00:00:00Z")));
+        return ResponseEntity.status(HttpStatus.OK).body(account);
+    }
 
-        Account account1 = new Account();
-        account1.setCustomerId("2");
+    public static ResponseEntity<AccountDto> getAccountDtoData(){
+        AccountDto account = new AccountDto();
+        account.set_id("1L");
+        account.setType(Type.CURRENT);
+        account.setCustomerId("1234");
+        account.setCreatedAt(Date.from(Instant.parse("2023-02-01T00:00:00Z")));
+        return ResponseEntity.status(HttpStatus.OK).body(account);
+    }
 
+    public static ResponseEntity<UserDto> getUserDto() {
+        UserDto user = new UserDto();
+        user.setId("1234");
+        user.setFirstName("Aleesha");
+        user.setMiddleName("");
+        user.setLastName("Yadav");
+        user.setAddress("Pune");
+        user.setGender(Gender.FEMALE);
+        user.setEmail("aleeshay@maveric-systems.com");
+        user.setDateOfBirth(Date.from(Instant.parse("1994-10-22T00:00:00Z")));
+        user.setPhoneNumber("1234567890");
 
-        accountList.add(account1);
-        accountList.add(account);
-        return ResponseEntity.status(HttpStatus.OK).body(accountList);
+        return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 }
-
